@@ -239,6 +239,24 @@
         gap: 8px;
         margin: 10px 0;
       }
+      .channels {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin: 8px 0 12px;
+      }
+      .channel {
+        min-height: 50px;
+        padding: 8px 10px;
+        border: 1.5px solid var(--line);
+        border-radius: 13px;
+        background: #fff;
+        text-align: left;
+      }
+      .channel b,
+      .channel small { display: block; }
+      .channel small { margin-top: 2px; color: var(--muted); font-size: 9px; }
+      .channel.active { border-color: var(--red); box-shadow: 0 0 0 3px #bd443811; }
       .type {
         position: relative;
         display: flex;
@@ -423,7 +441,7 @@
       }
       .payments {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr;
         gap: 8px;
       }
       .pay {
@@ -472,6 +490,23 @@
         gap: 5px;
         color: #f07d00;
         font-weight: 900;
+      }
+      .brand-applepay {
+        gap: 7px;
+        color: #111;
+        font: 800 18px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      .apple-mark { font-size: 25px; line-height: 1; }
+      .test-badge {
+        display: inline-flex;
+        margin-bottom: 7px;
+        padding: 3px 7px;
+        border-radius: 999px;
+        background: #635bff;
+        color: #fff;
+        font-size: 9px;
+        font-weight: 900;
+        letter-spacing: .04em;
       }
       .octopus-mark {
         font-size: 35px;
@@ -723,6 +758,8 @@
           </div>
         </div>
         <div class="content">
+          <p class="eyebrow">取票方式</p>
+          <div id="channels" class="channels"></div>
           <div class="section-head">
             <div>
               <p class="eyebrow">1 · 選擇客人</p>
@@ -744,7 +781,7 @@
           <button class="back" type="button" data-back="home" aria-label="返回">
             ‹
           </button>
-          <h1 id="payTitle">確認輪候飛</h1>
+          <h1 id="payTitle">測試付款</h1>
           <span></span>
         </div>
         <div class="receipt">
@@ -757,21 +794,21 @@
           <p id="detail">剪髮、洗髮及造型 · 約 35 分鐘</p>
           <div class="breakdown">
             <div class="row">
-              <b>到店應付</b><b>HK$<span id="total">90</span></b>
+              <b id="amountLabel">測試付款總額</b><b>HK$<span id="total">90</span></b>
             </div>
           </div>
         </div>
         <div class="content">
-          <p class="eyebrow">3 · 選擇到店付款方式</p>
+          <span class="test-badge">STRIPE / OCTOPUS 測試模式</span>
+          <p class="eyebrow" id="paymentHeading">3 · 測試付款方式</p>
           <div id="payments" class="payments"></div>
-          <div class="notice">
-            <b>付款安排</b
-            ><br />此頁只記錄你的付款選擇，不會即時扣款。請到店後按職員指示完成付款。
+          <div class="notice" id="paymentNotice">
+            <b>測試模式</b><br />不會收取真實款項。
           </div>
         </div>
         <div class="bottom">
           <button id="issueBtn" class="cta" type="button">
-            確認攞飛 · 到店付 HK$<span id="payTotal">90</span>
+            開始測試付款 · HK$<span id="payTotal">90</span>
           </button>
         </div>
       </section>
@@ -798,7 +835,7 @@
           </div>
           <div class="ticket-grid">
             <span><small>攞飛時前面人數</small><b id="ahead">4 位客人</b></span
-            ><span><small>到店付款方式</small><b id="methodText">Visa</b></span>
+            ><span><small>付款方式</small><b id="methodText">Apple Pay（經 Stripe）</b></span>
           </div>
         </div>
         <div class="ticket-detail">
@@ -812,7 +849,7 @@
         </div>
         <div class="notice">
           <b>請保留此頁或截圖</b
-          ><br />無論使用手機遙距取票或店內自助機取票，到店後向職員出示輪候飛即可。
+          ><br />此輪候飛由測試付款流程建立，不代表已收取真實款項。
         </div>
         <p class="saved" id="savedAt"></p>
         <div class="content">
@@ -865,7 +902,14 @@
             basePrice: 160,
           },
         ];
-        const paymentMethods = QueueLogic.getPaymentMethods();
+        const stripeLinks = {
+          'male-0': 'https://buy.stripe.com/test_aFabJ132Gg5q1pMfET8k800',
+          'male-1': 'https://buy.stripe.com/test_00w3cv46K2eAd8ugIX8k801',
+          'male-2': 'https://buy.stripe.com/test_00w6oH5aO7yUd8ueAP8k802',
+          'female-0': 'https://buy.stripe.com/test_9B6aEX0Uyg5qecy8cr8k803',
+          'female-1': 'https://buy.stripe.com/test_fZuaEXcDgaL65G2dwL8k804',
+          'female-2': 'https://buy.stripe.com/test_28E00jdHkcTec4q64j8k805',
+        };
         const CURRENT_SERVING = 12,
           INITIAL_WAITING = 4;
         const storage = {
@@ -888,7 +932,8 @@
         };
         let selected = 0,
           customerType = 'male',
-          method = 'Visa',
+          channel = 'online',
+          method = QueueLogic.paymentMethodForChannel('online'),
           issuing = false;
         function currentService() {
           return QueueLogic.presentService(services[selected], customerType);
@@ -917,20 +962,20 @@
         }
         function paymentLogo(brand) {
           const logos = {
-            visa: '<span class="brand-logo brand-visa" aria-hidden="true">VISA</span>',
-            mastercard:
-              '<span class="brand-logo brand-mastercard" aria-hidden="true"><i></i><i></i></span>',
             octopus:
               '<span class="brand-logo brand-octopus" aria-hidden="true"><span class="octopus-mark">∞</span><span>八達通</span></span>',
-            alipay:
-              '<span class="brand-logo brand-alipay" aria-hidden="true"><span class="alipay-mark">支</span><span>Alipay</span></span>',
-            wechat:
-              '<span class="brand-logo brand-wechat" aria-hidden="true"><span class="chat-bubble">••</span><span class="chat-bubble">✓</span></span>',
-            cash: '<span class="brand-logo brand-cash" aria-hidden="true"><svg viewBox="0 0 64 40" fill="none"><rect x="2" y="3" width="60" height="34" rx="5" stroke="currentColor" stroke-width="4"/><circle cx="32" cy="20" r="9" stroke="currentColor" stroke-width="4"/><path d="M9 12c4 0 7-2 7-5M55 28c-4 0-7 2-7 5" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg></span>',
+            applepay:
+              '<span class="brand-logo brand-applepay" aria-hidden="true"><span class="apple-mark">●</span><span>Pay</span><small>via Stripe</small></span>',
           };
           return logos[brand];
         }
         function render() {
+          $('channels').innerHTML = [
+            { id: 'online', title: '手機網上取票', detail: 'Stripe 測試 · Apple Pay' },
+            { id: 'kiosk', title: '店內自助機', detail: '八達通拍卡測試' },
+          ].map((item) =>
+            `<button class="channel ${item.id === channel ? 'active' : ''}" type="button" data-channel="${item.id}" aria-pressed="${item.id === channel}"><b>${item.title}</b><small>${item.detail}</small></button>`,
+          ).join('');
           $('customerTypes').innerHTML = [
             { id: 'male', title: '男士', icon: '♂' },
             { id: 'female', title: '女士', icon: '♀' },
@@ -953,6 +998,8 @@
               return `<button class="service ${index === selected ? 'active' : ''}" type="button" data-service="${index}" aria-pressed="${index === selected}"><span class="icon">✂</span><span><b>${displayedService.name}</b><small>${displayedService.description} · 約 ${displayedService.duration} 分鐘</small></span><span class="service-price"><strong>HK$${presentation.total}</strong></span></button>`;
             })
             .join('');
+          const paymentMethods = QueueLogic.getPaymentMethods(channel);
+          method = QueueLogic.paymentMethodForChannel(channel);
           $('payments').innerHTML = paymentMethods
             .map(
               (item) =>
@@ -961,9 +1008,10 @@
             .join('');
           const service = currentService(),
             total = totalPrice();
-          ['price', 'total', 'payTotal'].forEach(
-            (id) => ($(id).textContent = total),
-          );
+          ['price', 'total', 'payTotal'].forEach((id) => {
+            const target = $(id);
+            if (target) target.textContent = total;
+          });
           $('chosen').textContent = service.name;
           $('detail').textContent =
             `${service.description} · 約 ${service.duration} 分鐘`;
@@ -972,6 +1020,15 @@
               service.basePrice,
               customerType,
             ).customerLabel;
+          $('paymentHeading').textContent = channel === 'kiosk'
+            ? '3 · 店內八達通測試'
+            : '3 · Stripe 網上測試付款';
+          $('paymentNotice').innerHTML = channel === 'kiosk'
+            ? '<b>八達通測試模式</b><br>按下按鈕後模擬讀卡器成功回應；不會扣除真實八達通餘額。'
+            : '<b>Stripe 測試模式</b><br>將前往 Stripe Sandbox。Apple Pay 只會在相容的 Apple 裝置及瀏覽器顯示；不會收取真實款項。';
+          $('issueBtn').innerHTML = channel === 'kiosk'
+            ? `模擬八達通拍卡 · HK$<span id="payTotal">${total}</span>`
+            : `前往 Stripe 測試付款 · HK$<span id="payTotal">${total}</span>`;
           renderQueue();
         }
         function show(id) {
@@ -992,8 +1049,8 @@
           $('ticketDuration').textContent = `預計服務 ${ticket.duration} 分鐘`;
           $('savedAt').textContent = `儲存時間：${ticket.time}`;
         }
-        function issueTicket() {
-          if (issuing) return;
+        function issueTicket(paymentStatus) {
+          if (issuing || !QueueLogic.canIssueTicket(channel, paymentStatus)) return;
           issuing = true;
           $('issueBtn').disabled = true;
           $('issueBtn').textContent = '正在建立輪候飛…';
@@ -1014,13 +1071,18 @@
           renderQueue();
           issuing = false;
           $('issueBtn').disabled = false;
-          $('issueBtn').innerHTML =
-            `確認攞飛 · 到店付 HK$<span id="payTotal">${totalPrice()}</span>`;
+          render();
           if (!saved)
             $('savedAt').textContent +=
               ' · 注意：瀏覽器無法永久儲存此輪候飛，請截圖保存';
         }
         document.addEventListener('click', (event) => {
+          const selectedChannel = event.target.closest('[data-channel]');
+          if (selectedChannel) {
+            channel = selectedChannel.dataset.channel;
+            render();
+            return;
+          }
           const type = event.target.closest('[data-type]');
           if (type) {
             customerType = type.dataset.type;
@@ -1045,7 +1107,22 @@
           }
         });
         $('continueBtn').addEventListener('click', () => show('pay'));
-        $('issueBtn').addEventListener('click', issueTicket);
+        $('issueBtn').addEventListener('click', () => {
+          if (channel === 'online') {
+            const key = QueueLogic.stripePaymentKey(selected, customerType);
+            storage.set('babaPendingStripeTestV1', { key, selected, customerType });
+            window.location.assign(stripeLinks[key]);
+            return;
+          }
+          if (issuing) return;
+          issuing = true;
+          $('issueBtn').disabled = true;
+          $('issueBtn').textContent = '請拍八達通（測試）…';
+          window.setTimeout(() => {
+            issuing = false;
+            issueTicket('octopus-test-approved');
+          }, 900);
+        });
         $('resume').addEventListener('click', () => {
           const ticket = QueueLogic.normalizeStoredTicket(
             storage.get('babaLastTicketV2', null),
@@ -1063,6 +1140,22 @@
           $('resume').classList.add('visible');
         }
         render();
+        const params = new URLSearchParams(window.location.search);
+        const pending = storage.get('babaPendingStripeTestV1', null);
+        if (
+          params.get('stripe_test') === 'success' &&
+          pending &&
+          pending.key === params.get('payment')
+        ) {
+          selected = Number(pending.selected);
+          customerType = pending.customerType === 'female' ? 'female' : 'male';
+          channel = 'online';
+          method = QueueLogic.paymentMethodForChannel(channel);
+          storage.set('babaPendingStripeTestV1', null);
+          window.history.replaceState({}, '', window.location.pathname);
+          render();
+          issueTicket('stripe-test-success');
+        }
       })();
     </script>
   </body>

@@ -36,15 +36,34 @@
     };
   }
 
-  function getPaymentMethods() {
+  function getPaymentMethods(channel) {
+    if (channel === 'kiosk') {
+      return [{ id: 'octopus', label: '八達通', brand: 'octopus' }];
+    }
     return [
-      { id: 'visa', label: 'Visa', brand: 'visa' },
-      { id: 'mastercard', label: 'Mastercard', brand: 'mastercard' },
-      { id: 'octopus', label: '八達通', brand: 'octopus' },
-      { id: 'alipay', label: '支付寶', brand: 'alipay' },
-      { id: 'wechat', label: '微信支付', brand: 'wechat' },
-      { id: 'cash', label: '現金', brand: 'cash' },
+      {
+        id: 'stripe',
+        label: 'Apple Pay（經 Stripe）',
+        brand: 'applepay',
+      },
     ];
+  }
+
+  function paymentMethodForChannel(channel) {
+    return channel === 'kiosk' ? '八達通' : 'Apple Pay（經 Stripe）';
+  }
+
+  function canIssueTicket(channel, paymentStatus) {
+    return (
+      (channel === 'kiosk' && paymentStatus === 'octopus-test-approved') ||
+      (channel === 'online' && paymentStatus === 'stripe-test-success')
+    );
+  }
+
+  function stripePaymentKey(serviceIndex, customerType) {
+    const type = customerType === 'female' ? 'female' : 'male';
+    const index = Math.max(0, Math.min(2, Math.floor(Number(serviceIndex) || 0)));
+    return `${type}-${index}`;
   }
 
   function formatTicketNo(sequence) {
@@ -85,5 +104,5 @@
     return Array.from({ length: count }, (_, index) => formatTicketNo(start + index + 1));
   }
 
-  root.QueueLogic = { FEMALE_SURCHARGE, calculateTotal, buildPricePresentation, presentService, getQueueCopy, getPaymentMethods, createTicket, normalizeStoredTicket, upcomingTickets };
+  root.QueueLogic = { FEMALE_SURCHARGE, calculateTotal, buildPricePresentation, presentService, getQueueCopy, getPaymentMethods, paymentMethodForChannel, canIssueTicket, stripePaymentKey, createTicket, normalizeStoredTicket, upcomingTickets };
 })(typeof window !== 'undefined' ? window : globalThis);
