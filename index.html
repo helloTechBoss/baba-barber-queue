@@ -1,0 +1,1069 @@
+<!doctype html>
+<html lang="zh-Hant-HK">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#f7f1e7" />
+    <title>爸爸索 barber shop｜輪候取票</title>
+    <style>
+      :root {
+        --ink: #1c1a18;
+        --paper: #fffdf8;
+        --cream: #f2eadc;
+        --line: #d9d0c3;
+        --muted: #746d64;
+        --red: #bd4438;
+        --safe: env(safe-area-inset-bottom, 0px);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        background: #d9d3ca;
+      }
+      body {
+        margin: 0;
+        color: var(--ink);
+        font-family: Arial, 'PingFang HK', 'Microsoft JhengHei', sans-serif;
+      }
+      .app {
+        width: min(100%, 460px);
+        min-height: 100dvh;
+        margin: auto;
+        background: var(--paper);
+        border-inline: 1px solid var(--line);
+        overflow: hidden;
+      }
+      .screen {
+        display: none;
+        min-height: 100dvh;
+        padding-bottom: calc(82px + var(--safe));
+      }
+      .screen.active {
+        display: block;
+      }
+      button {
+        font: inherit;
+        cursor: pointer;
+      }
+      .topbar {
+        height: 66px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 16px;
+      }
+      .brand {
+        display: flex;
+        gap: 9px;
+        align-items: center;
+      }
+      .mark {
+        display: grid;
+        place-items: center;
+        width: 39px;
+        height: 39px;
+        border-radius: 50%;
+        background: var(--ink);
+        color: #fff;
+        font-size: 18px;
+      }
+      .brand b {
+        display: block;
+        font:
+          700 19px Georgia,
+          serif;
+      }
+      .brand small {
+        display: block;
+        color: var(--muted);
+        font-size: 10px;
+        letter-spacing: 0.06em;
+      }
+      .offline {
+        border-radius: 999px;
+        background: #eee0b8;
+        padding: 7px 10px;
+        font-size: 10px;
+        font-weight: 900;
+      }
+      .hero {
+        position: relative;
+        height: 132px;
+        margin: 0 14px;
+        overflow: hidden;
+        border-radius: 20px;
+        background: #151311;
+      }
+      .hero-bg {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.48;
+      }
+      .mascot {
+        position: absolute;
+        object-fit: contain;
+        pointer-events: none;
+        user-select: none;
+      }
+      .hero .mascot {
+        right: -2px;
+        bottom: -48px;
+        width: 114px;
+        height: 190px;
+      }
+      .hero-copy {
+        position: absolute;
+        left: 17px;
+        top: 18px;
+        color: #fff;
+      }
+      .hero-copy small {
+        font-weight: 800;
+        color: #ffffffa8;
+      }
+      .hero-copy strong {
+        display: block;
+        max-width: 220px;
+        margin-top: 6px;
+        font-size: 21px;
+        line-height: 1.12;
+      }
+      .entry-help {
+        display: block;
+        max-width: 235px;
+        margin-top: 6px;
+        color: #ffffffb8;
+        font-size: 10px;
+        line-height: 1.35;
+      }
+      .queue-card {
+        position: relative;
+        margin: -24px 14px 12px;
+        padding: 13px 14px 12px;
+        border-radius: 16px;
+        background: var(--ink);
+        color: #fff;
+        box-shadow: 0 8px 24px #0002;
+      }
+      .queue-top {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      .now small,
+      .waiting small {
+        display: block;
+        color: #ffffff8a;
+        font-size: 10px;
+      }
+      .now b {
+        font:
+          800 26px Georgia,
+          serif;
+      }
+      .waiting {
+        text-align: right;
+      }
+      .waiting b {
+        font-size: 15px;
+      }
+      .upcoming {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        margin-top: 9px;
+        padding-top: 9px;
+        border-top: 1px solid #ffffff1d;
+      }
+      .upcoming > small {
+        margin-right: 2px;
+        color: #ffffff6e;
+        font-size: 9px;
+      }
+      #upcomingNos {
+        display: flex;
+        gap: 9px;
+      }
+      .next-no {
+        font:
+          800 11px Georgia,
+          serif;
+      }
+      .next-no:nth-child(1) {
+        opacity: 0.75;
+      }
+      .next-no:nth-child(2) {
+        opacity: 0.52;
+      }
+      .next-no:nth-child(3) {
+        opacity: 0.32;
+      }
+      .next-no:nth-child(4) {
+        opacity: 0.16;
+      }
+      .content {
+        padding: 0 14px;
+      }
+      .eyebrow {
+        margin: 12px 0 6px;
+        color: var(--muted);
+        font-size: 9px;
+        font-weight: 900;
+        letter-spacing: 0.16em;
+      }
+      .section-head {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .section-head h1 {
+        margin: 0;
+        font:
+          700 22px Georgia,
+          serif;
+      }
+      .section-head small {
+        color: var(--muted);
+        font-size: 10px;
+      }
+      .customer-types {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin: 10px 0;
+      }
+      .type {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        min-height: 52px;
+        padding: 8px 10px;
+        border: 1.5px solid var(--line);
+        border-radius: 13px;
+        background: #fff;
+        text-align: left;
+      }
+      .type.active,
+      .service.active,
+      .pay.active {
+        border-color: var(--red);
+        box-shadow: 0 0 0 3px #bd443811;
+      }
+      .type-icon {
+        display: grid;
+        place-items: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        background: var(--cream);
+        font-weight: 900;
+      }
+      .type span:nth-child(2) {
+        flex: 1;
+      }
+      .type b {
+        display: block;
+        font-size: 13px;
+      }
+      .type small {
+        display: block;
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 9px;
+      }
+      .mini-mascot {
+        position: absolute;
+        right: -2px;
+        bottom: -2px;
+        width: 34px;
+        height: 52px;
+        object-fit: contain;
+        opacity: 0.88;
+      }
+      .services {
+        display: grid;
+        gap: 7px;
+      }
+      .service {
+        display: grid;
+        grid-template-columns: 34px 1fr auto;
+        align-items: center;
+        gap: 9px;
+        width: 100%;
+        min-height: 58px;
+        padding: 8px 10px;
+        border: 1.5px solid var(--line);
+        border-radius: 13px;
+        background: #fff;
+        text-align: left;
+      }
+      .icon {
+        display: grid;
+        place-items: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        background: var(--cream);
+        color: var(--red);
+      }
+      .service b {
+        font-size: 12px;
+      }
+      .service small {
+        display: block;
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 9px;
+      }
+      .service-price {
+        text-align: right;
+      }
+      .service-price strong {
+        font-size: 12px;
+      }
+      .bottom {
+        position: fixed;
+        z-index: 5;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: min(460px, 100%);
+        padding: 10px 14px calc(10px + var(--safe));
+        border-top: 1px solid #d9d0c399;
+        background: #fffdf8ed;
+        backdrop-filter: blur(12px);
+      }
+      .cta {
+        width: 100%;
+        height: 52px;
+        border: 0;
+        border-radius: 13px;
+        background: var(--red);
+        color: #fff;
+        font-size: 14px;
+        font-weight: 900;
+      }
+      .cta:disabled {
+        opacity: 0.6;
+        cursor: wait;
+      }
+      .titlebar {
+        height: 64px;
+        display: grid;
+        grid-template-columns: 40px 1fr 40px;
+        align-items: center;
+        padding: 9px 14px;
+      }
+      .titlebar h1 {
+        text-align: center;
+        font:
+          700 19px Georgia,
+          serif;
+      }
+      .back {
+        width: 38px;
+        height: 38px;
+        border: 1px solid var(--line);
+        border-radius: 50%;
+        background: var(--paper);
+        font-size: 24px;
+      }
+      .receipt,
+      .ticket,
+      .notice {
+        margin: 0 14px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 14px;
+      }
+      .receipt {
+        position: relative;
+        overflow: hidden;
+      }
+      .receipt > .mascot {
+        right: -14px;
+        bottom: -38px;
+        width: 82px;
+        height: 132px;
+        opacity: 0.13;
+      }
+      .receipt h2 {
+        margin: 4px 0;
+        font-size: 16px;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .receipt p {
+        margin: 5px 54px 10px 0;
+        font-size: 11px;
+      }
+      .breakdown {
+        display: grid;
+        gap: 5px;
+        padding-top: 9px;
+        border-top: 1px dashed var(--line);
+        font-size: 11px;
+      }
+      .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .breakdown .row:last-child {
+        font-size: 14px;
+      }
+      .payments {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .pay {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 68px;
+        padding: 8px;
+        border: 1.5px solid var(--line);
+        border-radius: 13px;
+        background: #fff;
+        text-align: left;
+      }
+      .brand-logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 102px;
+        height: 38px;
+      }
+      .brand-visa {
+        color: #1434cb;
+        font: italic 900 25px Arial, sans-serif;
+        letter-spacing: -2px;
+      }
+      .brand-mastercard {
+        position: relative;
+      }
+      .brand-mastercard i {
+        position: absolute;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+      }
+      .brand-mastercard i:first-child {
+        left: 25px;
+        background: #eb001b;
+      }
+      .brand-mastercard i:last-child {
+        right: 25px;
+        background: #f79e1b;
+        mix-blend-mode: multiply;
+      }
+      .brand-octopus {
+        gap: 5px;
+        color: #f07d00;
+        font-weight: 900;
+      }
+      .octopus-mark {
+        font-size: 35px;
+        line-height: 1;
+        transform: rotate(-15deg);
+      }
+      .brand-alipay {
+        gap: 6px;
+        color: #1677ff;
+        font-weight: 900;
+      }
+      .alipay-mark {
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        background: #1677ff;
+        color: #fff;
+        font-size: 22px;
+      }
+      .brand-wechat {
+        position: relative;
+      }
+      .chat-bubble {
+        position: absolute;
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 32px;
+        border-radius: 50%;
+        background: #07c160;
+        color: #fff;
+        font-size: 18px;
+        font-weight: 900;
+      }
+      .chat-bubble:first-child {
+        left: 24px;
+        top: 1px;
+      }
+      .chat-bubble:last-child {
+        right: 23px;
+        bottom: 0;
+        width: 33px;
+        height: 26px;
+        border: 2px solid #fff;
+      }
+      .brand-cash svg {
+        width: 48px;
+        color: #28754c;
+      }
+      .pay-check {
+        position: absolute;
+        top: 6px;
+        right: 7px;
+        display: grid;
+        place-items: center;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--red);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 900;
+      }
+      .notice {
+        margin-top: 10px;
+        background: var(--cream);
+        font-size: 11px;
+        line-height: 1.55;
+      }
+      .ticket {
+        position: relative;
+        overflow: hidden;
+        background: var(--ink);
+        color: #fff;
+        border: 0;
+        padding: 18px;
+      }
+      .ticket > .mascot {
+        right: -7px;
+        bottom: -82px;
+        width: 142px;
+        height: 235px;
+        opacity: 0.68;
+      }
+      .ticket .row {
+        position: relative;
+        z-index: 1;
+      }
+      .ticket-no {
+        font:
+          800 51px Georgia,
+          serif;
+      }
+      .status {
+        align-self: start;
+        border-radius: 999px;
+        background: #f4dfab;
+        color: #2b2110;
+        padding: 7px 9px;
+        font-size: 10px;
+      }
+      .ticket-grid {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin-top: 14px;
+        padding-top: 13px;
+        border-top: 1px dashed #ffffff36;
+      }
+      .ticket-grid small {
+        display: block;
+        color: #ffffff78;
+        font-size: 9px;
+      }
+      .ticket-grid b {
+        display: block;
+        margin-top: 4px;
+        font-size: 12px;
+      }
+      .ticket-detail {
+        margin: 10px 14px 0;
+        padding: 13px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        font-size: 11px;
+      }
+      .ticket-detail .row {
+        padding: 4px 0;
+      }
+      .saved {
+        text-align: center;
+        color: var(--muted);
+        font-size: 10px;
+        margin: 12px;
+      }
+      .secondary {
+        width: 100%;
+        margin-top: 8px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #fff;
+        padding: 11px;
+        font-size: 12px;
+        font-weight: 800;
+      }
+      .resume {
+        display: none;
+        margin-top: 7px;
+        border: 0;
+        background: transparent;
+        padding: 0;
+        color: #f4dfab;
+        font-size: 10px;
+        font-weight: 900;
+        text-decoration: underline;
+      }
+      .resume.visible {
+        display: block;
+      }
+      @media (max-height: 690px) {
+        .topbar {
+          height: 58px;
+        }
+        .hero {
+          height: 108px;
+        }
+        .hero-copy {
+          top: 13px;
+        }
+        .queue-card {
+          margin-top: -20px;
+          padding-block: 10px;
+        }
+        .eyebrow {
+          margin-top: 8px;
+        }
+        .customer-types {
+          margin: 7px 0;
+        }
+        .service {
+          min-height: 52px;
+        }
+        .screen {
+          padding-bottom: 76px;
+        }
+      }
+      @media (min-width: 700px) {
+        body {
+          padding: 18px 0;
+        }
+        .app,
+        .screen {
+          min-height: calc(100dvh - 36px);
+          border-radius: 24px;
+        }
+        .bottom {
+          bottom: 18px;
+          border-radius: 0 0 24px 24px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          scroll-behavior: auto !important;
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <section id="home" class="screen active" aria-labelledby="homeTitle">
+        <header class="topbar">
+          <div class="brand">
+            <span class="mark" aria-hidden="true">✂</span
+            ><span><b>爸爸索</b><small>BARBER SHOP</small></span>
+          </div>
+          <span class="offline">● 輪候取票</span>
+        </header>
+        <div class="hero">
+          <img class="hero-bg" src="shop.png" alt="爸爸索店內環境" /><img
+            class="mascot"
+            src="mascot.png"
+            alt="爸爸索小理髮師吉祥物"
+          />
+          <div class="hero-copy">
+            <strong id="homeTitle">立即攞輪候飛</strong
+            ><small class="entry-help"
+              >可用手機遙距取票，亦可在店內自助機取票。</small
+            ><button id="resume" class="resume" type="button">
+              查看上次輪候飛 →
+            </button>
+          </div>
+        </div>
+        <div class="queue-card" aria-label="輪候狀況">
+          <div class="queue-top">
+            <div class="now">
+              <small>而家叫緊</small><b id="servingNo">L012</b>
+            </div>
+            <div class="waiting">
+              <small>你前面預計</small><b><span id="count">4</span> 位客人</b>
+            </div>
+          </div>
+          <div class="upcoming">
+            <small>接住</small><span id="upcomingNos"></span>
+          </div>
+        </div>
+        <div class="content">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">1 · 選擇客人</p>
+              <h1>今次邊位剪？</h1>
+            </div>
+          </div>
+          <div id="customerTypes" class="customer-types"></div>
+          <p class="eyebrow">2 · 選擇服務</p>
+          <div id="services" class="services"></div>
+        </div>
+        <div class="bottom">
+          <button id="continueBtn" class="cta" type="button">
+            確認服務 · HK$<span id="price">90</span>
+          </button>
+        </div>
+      </section>
+      <section id="pay" class="screen" aria-labelledby="payTitle">
+        <div class="titlebar">
+          <button class="back" type="button" data-back="home" aria-label="返回">
+            ‹
+          </button>
+          <h1 id="payTitle">確認輪候飛</h1>
+          <span></span>
+        </div>
+        <div class="receipt">
+          <img class="mascot" src="mascot.png" alt="" /><small
+            class="muted"
+            id="customerLabel"
+            >男士服務</small
+          >
+          <h2 id="chosen">男士基本剪髮</h2>
+          <p id="detail">剪髮、洗髮及造型 · 約 35 分鐘</p>
+          <div class="breakdown">
+            <div class="row">
+              <b>到店應付</b><b>HK$<span id="total">90</span></b>
+            </div>
+          </div>
+        </div>
+        <div class="content">
+          <p class="eyebrow">3 · 選擇到店付款方式</p>
+          <div id="payments" class="payments"></div>
+          <div class="notice">
+            <b>付款安排</b
+            ><br />此頁只記錄你的付款選擇，不會即時扣款。請到店後按職員指示完成付款。
+          </div>
+        </div>
+        <div class="bottom">
+          <button id="issueBtn" class="cta" type="button">
+            確認攞飛 · 到店付 HK$<span id="payTotal">90</span>
+          </button>
+        </div>
+      </section>
+      <section id="ticket" class="screen" aria-labelledby="ticketTitle">
+        <div class="titlebar">
+          <button
+            class="back"
+            type="button"
+            data-back="home"
+            aria-label="返回主頁"
+          >
+            ‹
+          </button>
+          <h1 id="ticketTitle">我的輪候飛</h1>
+          <span></span>
+        </div>
+        <div class="ticket">
+          <img class="mascot" src="mascot.png" alt="" />
+          <div class="row">
+            <span
+              ><small>你的輪候號碼</small>
+              <div id="ticketNo" class="ticket-no">L017</div></span
+            ><b class="status">✓ 已儲存</b>
+          </div>
+          <div class="ticket-grid">
+            <span><small>攞飛時前面人數</small><b id="ahead">4 位客人</b></span
+            ><span><small>到店付款方式</small><b id="methodText">Visa</b></span>
+          </div>
+        </div>
+        <div class="ticket-detail">
+          <div class="row">
+            <span id="ticketService">男士基本剪髮 · 男士</span
+            ><b>HK$<span id="ticketTotal">90</span></b>
+          </div>
+          <div class="row muted">
+            <span id="ticketDuration">預計服務 35 分鐘</span>
+          </div>
+        </div>
+        <div class="notice">
+          <b>請保留此頁或截圖</b
+          ><br />無論使用手機遙距取票或店內自助機取票，到店後向職員出示輪候飛即可。
+        </div>
+        <p class="saved" id="savedAt"></p>
+        <div class="content">
+          <button class="secondary" type="button" data-back="home">
+            返回主頁再攞輪候飛
+          </button>
+        </div>
+      </section>
+    </main>
+    <script src="queue-logic.js"></script>
+    <script>
+      (() => {
+        'use strict';
+        const $ = (id) => document.getElementById(id);
+        const services = [
+          {
+            male: {
+              name: '男士基本剪髮',
+              description: '剪髮、洗髮及造型',
+            },
+            female: {
+              name: '女士基本剪髮',
+              description: '剪髮、洗髮及造型',
+            },
+            duration: 35,
+            basePrice: 90,
+          },
+          {
+            male: {
+              name: '男士漸層造型',
+              description: '漸層剪髮、洗髮及造型',
+            },
+            female: {
+              name: '女士層次造型',
+              description: '層次修剪、洗髮及造型',
+            },
+            duration: 50,
+            basePrice: 130,
+          },
+          {
+            male: {
+              name: '剪髮及鬍鬚修整',
+              description: '全套剪髮及鬍鬚理容',
+            },
+            female: {
+              name: '女士長髮造型',
+              description: '長髮修剪、洗髮及造型',
+            },
+            duration: 60,
+            basePrice: 160,
+          },
+        ];
+        const paymentMethods = QueueLogic.getPaymentMethods();
+        const CURRENT_SERVING = 12,
+          INITIAL_WAITING = 4;
+        const storage = {
+          get(key, fallback) {
+            try {
+              const value = localStorage.getItem(key);
+              return value === null ? fallback : JSON.parse(value);
+            } catch {
+              return fallback;
+            }
+          },
+          set(key, value) {
+            try {
+              localStorage.setItem(key, JSON.stringify(value));
+              return true;
+            } catch {
+              return false;
+            }
+          },
+        };
+        let selected = 0,
+          customerType = 'male',
+          method = 'Visa',
+          issuing = false;
+        function currentService() {
+          return QueueLogic.presentService(services[selected], customerType);
+        }
+        function totalPrice() {
+          return QueueLogic.buildPricePresentation(
+            services[selected].basePrice,
+            customerType,
+          ).total;
+        }
+        function issuedCount() {
+          const value = Number(storage.get('babaIssuedCountV2', 0));
+          return Number.isFinite(value) && value >= 0 ? Math.floor(value) : 0;
+        }
+        function renderQueue() {
+          const waiting = INITIAL_WAITING + issuedCount();
+          $('count').textContent = waiting;
+          $('servingNo').textContent =
+            `L${String(CURRENT_SERVING).padStart(3, '0')}`;
+          $('upcomingNos').innerHTML = QueueLogic.upcomingTickets(
+            CURRENT_SERVING,
+            4,
+          )
+            .map((no) => `<span class="next-no">${no}</span>`)
+            .join('');
+        }
+        function paymentLogo(brand) {
+          const logos = {
+            visa: '<span class="brand-logo brand-visa" aria-hidden="true">VISA</span>',
+            mastercard:
+              '<span class="brand-logo brand-mastercard" aria-hidden="true"><i></i><i></i></span>',
+            octopus:
+              '<span class="brand-logo brand-octopus" aria-hidden="true"><span class="octopus-mark">∞</span><span>八達通</span></span>',
+            alipay:
+              '<span class="brand-logo brand-alipay" aria-hidden="true"><span class="alipay-mark">支</span><span>Alipay</span></span>',
+            wechat:
+              '<span class="brand-logo brand-wechat" aria-hidden="true"><span class="chat-bubble">••</span><span class="chat-bubble">✓</span></span>',
+            cash: '<span class="brand-logo brand-cash" aria-hidden="true"><svg viewBox="0 0 64 40" fill="none"><rect x="2" y="3" width="60" height="34" rx="5" stroke="currentColor" stroke-width="4"/><circle cx="32" cy="20" r="9" stroke="currentColor" stroke-width="4"/><path d="M9 12c4 0 7-2 7-5M55 28c-4 0-7 2-7 5" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg></span>',
+          };
+          return logos[brand];
+        }
+        function render() {
+          $('customerTypes').innerHTML = [
+            { id: 'male', title: '男士', icon: '♂' },
+            { id: 'female', title: '女士', icon: '♀' },
+          ]
+            .map(
+              (type, index) =>
+                `<button class="type ${type.id === customerType ? 'active' : ''}" type="button" data-type="${type.id}" aria-pressed="${type.id === customerType}"><span class="type-icon">${type.icon}</span><span><b>${type.title}</b></span>${index === 1 ? '<img class="mini-mascot" src="mascot.png" alt="">' : ''}</button>`,
+            )
+            .join('');
+          $('services').innerHTML = services
+            .map((service, index) => {
+              const displayedService = QueueLogic.presentService(
+                service,
+                customerType,
+              );
+              const presentation = QueueLogic.buildPricePresentation(
+                service.basePrice,
+                customerType,
+              );
+              return `<button class="service ${index === selected ? 'active' : ''}" type="button" data-service="${index}" aria-pressed="${index === selected}"><span class="icon">✂</span><span><b>${displayedService.name}</b><small>${displayedService.description} · 約 ${displayedService.duration} 分鐘</small></span><span class="service-price"><strong>HK$${presentation.total}</strong></span></button>`;
+            })
+            .join('');
+          $('payments').innerHTML = paymentMethods
+            .map(
+              (item) =>
+                `<button class="pay ${item.label === method ? 'active' : ''}" type="button" data-method="${item.label}" aria-label="${item.label}${item.label === method ? '，已選擇' : ''}" aria-pressed="${item.label === method}">${paymentLogo(item.brand)}${item.label === method ? '<span class="pay-check" aria-hidden="true">✓</span>' : ''}</button>`,
+            )
+            .join('');
+          const service = currentService(),
+            total = totalPrice();
+          ['price', 'total', 'payTotal'].forEach(
+            (id) => ($(id).textContent = total),
+          );
+          $('chosen').textContent = service.name;
+          $('detail').textContent =
+            `${service.description} · 約 ${service.duration} 分鐘`;
+          $('customerLabel').textContent =
+            QueueLogic.buildPricePresentation(
+              service.basePrice,
+              customerType,
+            ).customerLabel;
+          renderQueue();
+        }
+        function show(id) {
+          document
+            .querySelectorAll('.screen')
+            .forEach((screen) =>
+              screen.classList.toggle('active', screen.id === id),
+            );
+          window.scrollTo({ top: 0, behavior: 'instant' });
+        }
+        function loadTicket(ticket) {
+          $('ticketNo').textContent = ticket.no;
+          $('ahead').textContent = `${ticket.ahead} 位客人`;
+          $('methodText').textContent = ticket.method;
+          $('ticketService').textContent =
+            `${ticket.serviceName} · ${ticket.customerType === 'female' ? '女士' : '男士'}`;
+          $('ticketTotal').textContent = ticket.total;
+          $('ticketDuration').textContent = `預計服務 ${ticket.duration} 分鐘`;
+          $('savedAt').textContent = `儲存時間：${ticket.time}`;
+        }
+        function issueTicket() {
+          if (issuing) return;
+          issuing = true;
+          $('issueBtn').disabled = true;
+          $('issueBtn').textContent = '正在建立輪候飛…';
+          const countBefore = issuedCount();
+          const ticket = QueueLogic.createTicket({
+            sequence: CURRENT_SERVING + INITIAL_WAITING + countBefore + 1,
+            ahead: INITIAL_WAITING + countBefore,
+            method,
+            service: currentService(),
+            customerType,
+            time: new Date().toLocaleString('zh-HK', { hour12: false }),
+          });
+          storage.set('babaIssuedCountV2', countBefore + 1);
+          const saved = storage.set('babaLastTicketV2', ticket);
+          loadTicket(ticket);
+          $('resume').classList.add('visible');
+          show('ticket');
+          renderQueue();
+          issuing = false;
+          $('issueBtn').disabled = false;
+          $('issueBtn').innerHTML =
+            `確認攞飛 · 到店付 HK$<span id="payTotal">${totalPrice()}</span>`;
+          if (!saved)
+            $('savedAt').textContent +=
+              ' · 注意：瀏覽器無法永久儲存此輪候飛，請截圖保存';
+        }
+        document.addEventListener('click', (event) => {
+          const type = event.target.closest('[data-type]');
+          if (type) {
+            customerType = type.dataset.type;
+            render();
+            return;
+          }
+          const service = event.target.closest('[data-service]');
+          if (service) {
+            selected = Number(service.dataset.service);
+            render();
+            return;
+          }
+          const pay = event.target.closest('[data-method]');
+          if (pay) {
+            method = pay.dataset.method;
+            render();
+            return;
+          }
+          const back = event.target.closest('[data-back]');
+          if (back) {
+            show(back.dataset.back);
+          }
+        });
+        $('continueBtn').addEventListener('click', () => show('pay'));
+        $('issueBtn').addEventListener('click', issueTicket);
+        $('resume').addEventListener('click', () => {
+          const ticket = QueueLogic.normalizeStoredTicket(
+            storage.get('babaLastTicketV2', null),
+          );
+          if (ticket) {
+            loadTicket(ticket);
+            show('ticket');
+          }
+        });
+        const previous = QueueLogic.normalizeStoredTicket(
+          storage.get('babaLastTicketV2', null),
+        );
+        if (previous) {
+          loadTicket(previous);
+          $('resume').classList.add('visible');
+        }
+        render();
+      })();
+    </script>
+  </body>
+</html>
