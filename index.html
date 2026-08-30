@@ -449,8 +449,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        min-height: 68px;
-        padding: 8px;
+        min-height: 58px;
+        padding: 9px 14px;
         border: 1.5px solid var(--line);
         border-radius: 13px;
         background: #fff;
@@ -492,11 +492,46 @@
         font-weight: 900;
       }
       .brand-applepay {
-        gap: 7px;
-        color: #111;
-        font: 800 18px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        gap: 10px;
+        width: auto;
+        height: auto;
+        color: #fff;
+        font: 800 20px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        white-space: nowrap;
       }
-      .apple-mark { font-size: 25px; line-height: 1; }
+      .pay-applepay {
+        border-color: #111;
+        background: linear-gradient(145deg, #1b1b1d, #050505);
+        box-shadow: 0 7px 18px #0000001c;
+      }
+      .pay-applepay.active {
+        border-color: #111;
+        box-shadow: 0 0 0 3px #635bff26, 0 7px 18px #0000001c;
+      }
+      .apple-pay-name {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        letter-spacing: -.04em;
+      }
+      .apple-mark { font-size: 24px; line-height: 1; }
+      .stripe-divider { width: 1px; height: 22px; background: #ffffff38; }
+      .stripe-chip {
+        padding: 4px 8px 5px;
+        border-radius: 7px;
+        background: #635bff;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: -.02em;
+      }
+      .pay-applepay .pay-check {
+        top: 50%;
+        right: 13px;
+        transform: translateY(-50%);
+        background: #fff;
+        color: #111;
+      }
       .test-badge {
         display: inline-flex;
         margin-bottom: 7px;
@@ -965,7 +1000,7 @@
             octopus:
               '<span class="brand-logo brand-octopus" aria-hidden="true"><span class="octopus-mark">∞</span><span>八達通</span></span>',
             applepay:
-              '<span class="brand-logo brand-applepay" aria-hidden="true"><span class="apple-mark">●</span><span>Pay</span><small>via Stripe</small></span>',
+              '<span class="brand-logo brand-applepay" aria-hidden="true"><span class="apple-pay-name"><span class="apple-mark"></span><span>Pay</span></span><span class="stripe-divider"></span><span class="stripe-chip">stripe</span></span>',
           };
           return logos[brand];
         }
@@ -1003,7 +1038,7 @@
           $('payments').innerHTML = paymentMethods
             .map(
               (item) =>
-                `<button class="pay ${item.label === method ? 'active' : ''}" type="button" data-method="${item.label}" aria-label="${item.label}${item.label === method ? '，已選擇' : ''}" aria-pressed="${item.label === method}">${paymentLogo(item.brand)}${item.label === method ? '<span class="pay-check" aria-hidden="true">✓</span>' : ''}</button>`,
+                `<button class="pay pay-${item.brand} ${item.label === method ? 'active' : ''}" type="button" data-method="${item.label}" aria-label="${item.label}${item.label === method ? '，已選擇' : ''}" aria-pressed="${item.label === method}">${paymentLogo(item.brand)}${item.label === method ? '<span class="pay-check" aria-hidden="true">✓</span>' : ''}</button>`,
             )
             .join('');
           const service = currentService(),
